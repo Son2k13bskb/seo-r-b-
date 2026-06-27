@@ -39,7 +39,7 @@ end)
 -- Load Script Main từ GitHub
 print("Đang load Seorb Main Script...")
 local success, err = pcall(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_USERNAME/SeorbHub/main/SeorbMain.lua"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Son2k13bskb/seo-r-b-/refs/heads/main/Main.lua"))()
 end)
 
 if success then
