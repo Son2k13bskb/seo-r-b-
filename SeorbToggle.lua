@@ -1,5 +1,6 @@
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local fluentGUI = playerGui.FluentUI
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SeorbToggleGUI"
@@ -27,13 +28,7 @@ uistroke.Parent = button
 local isOn = false
 
 button.MouseButton1Click:Connect(function()
-	isOn = not isOn
-	
-	if isOn then
-		_G.AutoFarm = true
-	else
-		_G.AutoFarm = false
-	end
+	fluentGUI.Enabled = not fluentGUI.Enabled
 end)
 
 -- Load Script Main từ GitHub
