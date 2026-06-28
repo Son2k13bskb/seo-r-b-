@@ -1,51 +1,40 @@
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local fluentGUI = playerGui.FluentUI
+-- BƯỚC 1: TẠO NÚT ĐÓNG MỞ (MOBILE/PC)
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SeorbToggleGUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+-- Đặt tên và chọn vị trí hiển thị an toàn
+ScreenGui.Name = "SeorbHubToggle"
+ScreenGui.Parent = game.CoreGui or game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
 
-local button = Instance.new("ImageButton")
-button.Size = UDim2.new(0, 60,0, 60)
-button.Position = UDim2.new(0.012, 0,0.888, 0)
-button.BorderSizePixel = 0
-button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-button.Image = "rbxassetid://90860550018720"
-button.ZIndex = 10
-button.Parent = screenGui
+-- Cấu hình nút (Có thể kéo thả)
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleButton.Size = UDim2.new(0, 45, 0, 45)
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Text = "S"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 22
+ToggleButton.Active = true
+ToggleButton.Draggable = true 
 
-local uicorner = Instance.new("UICorner")
-uicorner.CornerRadius = UDim.new(0, 40)
-uicorner.Parent = button
+-- Bo tròn nút
+UICorner.CornerRadius = UDim.new(0.5, 0)
+UICorner.Parent = ToggleButton
 
-local uistroke = Instance.new("UIStroke")
-uistroke.Color = Color3.fromRGB(255,0,0)
-uistroke.Thickness = 2.4
-uistroke.Parent = button
-
-local isOn = false
-
-button.MouseButton1Click:Connect(function()
-	fluentGUI.Enabled = not fluentGUI.Enabled
+-- Tạo hiệu ứng mô phỏng phím RightControl để đóng mở Menu Fluent
+local VirtualInputManager = game:GetService("VirtualInputManager")
+ToggleButton.MouseButton1Click:Connect(function()
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
+    task.wait(0.05)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
 end)
 
--- Load Script Main từ GitHub
-print("Đang load Seorb Main Script...")
-local success, err = pcall(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Son2k13bskb/seo-r-b-/refs/heads/main/Main.lua"))()
+-- BƯỚC 2: GỌI SCRIPT CHÍNH TỪ GITHUB
+local MainScriptURL = "LINK_RAW_GITHUB_CUA_BAN_THAY_VAO_DAY"
+pcall(function()
+    loadstring(game:HttpGet(MainScriptURL))()
 end)
-
-if success then
-	print("Seorb main script đã được tải")
-else
-	warn("❌ Load thất bại: " .. tostring(err))
-end
-
--- Thông báo
-game.StarterGui:SetCore("SendNotification", {
-	Title = "Seorb Hub",
-	Text = "Nút toggle đã xuất hiện!\nNhấn để bật/tắt auto farm.",
-	Duration = 8
-})
