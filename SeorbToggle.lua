@@ -34,7 +34,7 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 
 -- BƯỚC 2: GỌI SCRIPT CHÍNH TỪ GITHUB
-local MainScriptURL = "LINK_RAW_GITHUB_CUA_BAN_THAY_VAO_DAY"
+local MainScriptURL = "https://raw.githubusercontent.com/Son2k13bskb/seo-r-b-/refs/heads/main/Main.lua"
 pcall(function()
     loadstring(game:HttpGet(MainScriptURL))()
 end)
