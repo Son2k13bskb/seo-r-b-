@@ -30,18 +30,17 @@ _G.TweenSpeed = 250
 _G.AutoQuest = false
 _G.MobFarmRadius = 80        -- khoảng cách tối đa để gom quái
 _G.MaxMobStack = 8           -- số lượng quái tối đa
-_G.DespawnCheckDistance = 120 -- nếu xa quá thì bỏ
-_G.SafeHeight = 30           -- độ cao đứng trên đầu mob
+_G.DespawnCheckDistance = 120
+_G.SafeHeight = 30           
 
-local currentTween = nil -- Biến lưu trữ Tween hiện tại để hủy khi tắt
-local lastAttackTick = 0 -- Lưu thời gian đánh để tính Attack Speed
+local currentTween = nil
+local lastAttackTick = 0 
 
 -- Biến Services & Player
 local Player = game.Players.LocalPlayer
 local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
-local VirtualUser = game:GetService("VirtualUser")
 
 -- ==========================================
 -- GIAO DIỆN: MAIN FARM
@@ -119,7 +118,6 @@ task.spawn(function()
             if playerGui and playerGui:FindFirstChild("ScreenGui") and playerGui.ScreenGui:FindFirstChild("Dodge") then
                 kenActive = playerGui.ScreenGui.Dodge.Visible
             end
-            
             if not kenActive then
                 pcall(function()
                     RS.Remotes.CommE:FireServer("Instinct")
@@ -152,9 +150,7 @@ local function TweenTo(targetCFrame)
     local speed = _G.TweenSpeed
     local tweenInfo = TweenInfo.new(distance / speed, Enum.EasingStyle.Linear)
     
-    if currentTween then
-        currentTween:Cancel()
-    end
+    if currentTween then currentTween:Cancel() end
     
     currentTween = TweenService:Create(rootPart, tweenInfo, {CFrame = targetCFrame})
     currentTween:Play()
@@ -275,7 +271,6 @@ task.spawn(function()
                 
                 local targetMobs, islandCF, needQuest, questName, questLevel, npcCF = GetTargetInfo()
                 
-                -- XỬ LÝ NHẬN NHIỆM VỤ
                 if needQuest and npcCF and questName then
                     if not CheckQuest() then
                         local distToNPC = (Player.Character.HumanoidRootPart.Position - npcCF.Position).Magnitude
@@ -285,7 +280,7 @@ task.spawn(function()
                             RS.Remotes.CommF_:InvokeServer("StartQuest", questName, questLevel)
                             task.wait(0.5)
                         end
-                        return -- Vòng lặp dừng ở đây
+                        return 
                     end
                 end
 
@@ -293,7 +288,6 @@ task.spawn(function()
                 local killAuraTargets = {}
                 local allValidMobs = {}
 
-                -- BƯỚC 1: QUÉT QUÁI
                 if workspace:FindFirstChild("Enemies") then
                     for _, mob in pairs(workspace.Enemies:GetChildren()) do
                         if IsValidMob(mob) then
@@ -307,7 +301,6 @@ task.spawn(function()
                     end
                 end 
 
-                -- BƯỚC 2: CHỌN MỤC TIÊU VÀ GOM QUÁI VÀO BÃI ĐÁNH LAN
                 if #allValidMobs > 0 then
                     local playerPos = Player.Character.HumanoidRootPart.Position
                     table.sort(allValidMobs, function(a, b)
@@ -327,7 +320,6 @@ task.spawn(function()
                     end
                 end
 
-                -- BƯỚC 3: BAY ĐẾN VÀ TẤN CÔNG
                 if targetMob and targetMob:FindFirstChild("HumanoidRootPart") then
                     local safePos = targetMob.HumanoidRootPart.CFrame * CFrame.new(0, _G.SafeHeight, 0)
 
@@ -337,14 +329,17 @@ task.spawn(function()
 
                     Player.Character.HumanoidRootPart.CFrame = safePos
 
-                    -- LOGIC GOM QUÁI (CHỐNG GHOST MODEL)
+                    -- LOGIC GOM QUÁI & MỞ RỘNG HITBOX MỚI
                     if _G.BringMob then
                         for _, kMob in pairs(killAuraTargets) do
                             if kMob ~= targetMob and kMob:FindFirstChild("HumanoidRootPart") and kMob:FindFirstChild("Humanoid") then
+                                -- Dịch chuyển quái
                                 kMob.HumanoidRootPart.CFrame = targetMob.HumanoidRootPart.CFrame
                                 kMob.HumanoidRootPart.CanCollide = false
-                                kMob.Humanoid.WalkSpeed = 0
-                                kMob.Humanoid.JumpPower = 0
+                                -- Mở rộng Hitbox để đánh trúng kể cả khi server delay/tạo ghost
+                                kMob.HumanoidRootPart.Size = Vector3.new(50, 50, 50)
+                                kMob.HumanoidRootPart.Transparency = 1 
+                                
                                 if kMob.HumanoidRootPart:FindFirstChild("AssemblyLinearVelocity") then
                                     kMob.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
                                 end
@@ -352,8 +347,7 @@ task.spawn(function()
                         end
                     end
 
-                    -- XỬ LÝ TỐC ĐỘ ĐÁNH
-                    local attackDelay = 0.05 -- Fast Attack default
+                    local attackDelay = 0.05 
                     if _G.AttackSpeed == "Normal" then
                         attackDelay = 0.25
                     elseif _G.AttackSpeed == "Superfast Attack (CẢNH BÁO)" then
@@ -372,8 +366,9 @@ task.spawn(function()
                         if Net:FindFirstChild("RE/RegisterHit") then
                             for _, kTarget in pairs(killAuraTargets) do
                                 if kTarget and kTarget:FindFirstChild("HumanoidRootPart") then
+                                    -- Do hitbox đã được phóng to 50x50x50, khoảng cách đánh lan được nới lỏng an toàn
                                     local distanceToPlayer = (kTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude
-                                    if distanceToPlayer <= 60 then
+                                    if distanceToPlayer <= 80 then
                                         Net["RE/RegisterHit"]:FireServer(kTarget.HumanoidRootPart)
                                     end
                                 end
@@ -381,8 +376,6 @@ task.spawn(function()
                         end
                     end
                 else
-                    -- Sửa lỗi giật/dật: Chỉnh khoảng cách về đảo từ 200 lên 1500
-                    -- Để nhân vật ở lại bãi quái thay vì bay qua bay lại vô nghĩa.
                     if islandCF then
                         local distanceToIsland = (Player.Character.HumanoidRootPart.Position - islandCF.Position).Magnitude
                         if distanceToIsland > 1500 then
